@@ -9,9 +9,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-def scraper(query_list):
+def scraper(query_list,driver):
     df_techinasia = pd.DataFrame()
-    driver = webdriver.Safari()
+    #driver = webdriver.Safari()
     for query in query_list:
         kwd = query.lower()
 
@@ -21,7 +21,7 @@ def scraper(query_list):
         # Function untuk scroll page
         def scroll_page():
             driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
-            time.sleep(2)
+            time.sleep(1)
 
         # scrolling x kali
         for i in range(7):
@@ -32,6 +32,11 @@ def scraper(query_list):
         main_soup = BeautifulSoup(main_page_source, 'html.parser')
 
         job_results = main_soup.find_all('article', {'data-cy': 'job-result'})
+
+        if len(job_results)>0:
+            pass
+        else:
+            continue
 
         titles = []
         companies = []
@@ -75,8 +80,6 @@ def scraper(query_list):
             update = job.find('span',{'class':'jsx-1022654950 published-at'}).text.strip()
             updated.append(update)
 
-
-
         data = {
             'Portal': ['Techinasia' for x in range(len(titles))],
             'Job Title': titles,
@@ -111,11 +114,11 @@ def scraper(query_list):
         for job_url in job_urls:
             driver.get(job_url)
             
-            time.sleep(2)
+            time.sleep(1)
             
             page_source_individual = driver.page_source
 
-            time.sleep(2)
+            time.sleep(1)
             
             soup_individual = BeautifulSoup(page_source_individual, 'html.parser')
             
@@ -139,7 +142,7 @@ def scraper(query_list):
                     data_get.append(element.get_text())
                 except AttributeError:
                     data_get.append(None)
-            time.sleep(2)
+            time.sleep(1)
                 
         
             job_data_individual.append({
@@ -161,6 +164,6 @@ def scraper(query_list):
 
         df['Experience'] = experience
         df['URL'] = job_urls
-        df_techinasia = pd.concat([df_techinasia,df])
-    driver.close()
+        df_techinasia=pd.concat([df_techinasia,df])
+    #driver.close()
     return df_techinasia
